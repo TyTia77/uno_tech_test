@@ -5,7 +5,7 @@ module.exports = {
     devtool: debug ? "inline-sourcemap" : false,
 
     //define entry point
-    entry: './src/js/index.jsx',
+    entry: './src/js/index.js',
 
     //define output point
     output: {
