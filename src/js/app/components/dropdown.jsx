@@ -1,8 +1,6 @@
 import React from "react"
 import propTypes from 'prop-types'
 
-require("../../../style/index.scss")
-
 const Dropdown = ({ items, id }) =>
     <select id={id}>
         {items.map((item, index) => <option key={index} value={item}>{item}</option>)}

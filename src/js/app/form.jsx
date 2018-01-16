@@ -12,10 +12,14 @@ export default class Home extends React.Component {
         super();
         this.state = {
             submit: false,
+            results: null
         }
     }
 
     // componentWillMount() {
+    //     this.props = {
+    //         results: [],
+    //     }
     // }
 
     render() {
@@ -25,24 +29,56 @@ export default class Home extends React.Component {
         const loanLength = [240, 300, 360]; //months, max 360.
         const loanInterest = [2.2, 3.3, 4.4]; //percentage
 
-        const handleSubmit = () => {
-            let url = "https://api.unohomeloans.com.au/application-api/miltontest/calculators/refinance?currentLoanTermMonth=300&paymentType=PrincipalAndInterest&newLoanAmount=500000&newInterestRate=3.75&currentLoanAmount=500000&currentInterestRate=4.4&newLoanTermMonth=300";
+        // function Values(curAmt, curLen, curInt, newAmt, newLen, newInt){
+        //     if (!(this instanceof Values)) {
+        //         return new Values(curAmt, curLen, curInt, newAmt, newLen, newInt);
+        //     }
+        // }
 
+
+        let url = {
+            base: 'https://api.unohomeloans.com.au/application-api/miltontest/calculators/refinance?paymentType=PrincipalAndInterest',
+            
+            // TODO
+            getQueryUrl: function(arr){
+                return `${this.base}&currentLoanAmount=${arr[0]}&currentInterestRate=${arr[1]}&currentLoanTermMonth=${arr[2]}&newLoanAmount=${arr[3]}&newInterestRate=${arr[4]}&newLoanTermMonth=${arr[5]}`
+            }
+
+        }
+
+        const handleBack = () => this.setState({ submit: false })
+        
+        const handleSubmit = () => {
+
+            //TODO
+            let arr = [];
+            arr.push(document.getElementById('currentLoanAmount').value);
+            arr.push(document.getElementById('currentInterestRate').value);
+            arr.push(document.getElementById('currentLoanTerm').value);
+
+            arr.push(document.getElementById('newLoanAmount').value);
+            arr.push(document.getElementById('newInterestRate').value);
+            arr.push(document.getElementById('newLoanTerm').value);
+
+            console.log(arr);
+            console.log(url.getQueryUrl(arr));
             axios
-                .get(url)
+                .get(url.getQueryUrl(arr))
                 .then(response => {
                     console.log('response', response);
-                    this.setState({
-                        submit: true
-                    });
+                    this.setState({ submit: true, results: response.data});
                 })
         }
 
         if (this.state.submit){
+            console.log('props', this.state);
             return (
                 <div className="dialog-container">
                     <h1>result page</h1>
-                    <button>redo</button>
+                    <label>total savings: </label> ${this.state.results.totalSaving} <br/>
+                    <label>total month savings: </label> ${this.state.results.totalMonthlySaving} <br/>
+                    <label>total long term savings: </label>{this.state.results.totalLoanTermMonthSaving} <br/>
+                    <button onClick={handleBack}>back</button>
                 </div>
             )
         }
@@ -78,8 +114,4 @@ export default class Home extends React.Component {
             </div>
         );
     }
-}
-
-Home.propTypes = {
-
 }
