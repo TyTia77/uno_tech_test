@@ -9,7 +9,7 @@ module.exports = {
 
     //define output point
     output: {
-        filename: './bundle.js'
+        filename: './build/bundle.js'
     },
 
     module: {
