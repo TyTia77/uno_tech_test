@@ -4,7 +4,8 @@ import axios from "axios"
 
 require("./form.scss")
 
-import Dropdown from "./components/dropdown";
+import Results from "./components/result/result"
+import User from "./components/user_input/user_input"
 
 export default class Home extends React.Component {
 
@@ -16,102 +17,122 @@ export default class Home extends React.Component {
         }
     }
 
-    // componentWillMount() {
-    //     this.props = {
-    //         results: [],
-    //     }
-    // }
-
     render() {
 
         // hardcoded values =D
-        const loanAmount = [500000, 1000000, 1500000];
-        const loanLength = [240, 300, 360]; //months, max 360.
+        const loanAmount = ['500,000', '1,000,000', '1,500,000'];
+        const loanLength = [20, 25, 30]; //years, max 360months = 30years.
         const loanInterest = [2.2, 3.3, 4.4]; //percentage
 
-        // function Values(curAmt, curLen, curInt, newAmt, newLen, newInt){
-        //     if (!(this instanceof Values)) {
-        //         return new Values(curAmt, curLen, curInt, newAmt, newLen, newInt);
-        //     }
-        // }
+        // user input items
+        const items = [
+            { label: 'loan amount ($)', items: loanAmount, id: 'currentLoanAmount', category: 'current loan' },
+            { label: 'loan term month (yrs)', items: loanLength, id: 'currentLoanTermMonth', category: 'current loan' },
+            { label: 'interest rate (%)', items: loanInterest, id: 'currentInterestRate', category: 'current loan' },
+            { label: 'loan amount ($)', items: loanAmount, id: 'newLoanAmount', category: 'new loan' },
+            { label: 'loan term month (yrs)', items: loanLength, id: 'newLoanTermMonth', category: 'new loan' },
+            { label: 'interest rate (%)', items: loanInterest, id: 'newInterestRate', category: 'new loan' },
+        ]
 
+        class Api {
+            constructor(obj){
+                this.base = 'https://api.unohomeloans.com.au/application-api/miltontest/calculators/refinance?paymentType=PrincipalAndInterest';
 
-        let url = {
-            base: 'https://api.unohomeloans.com.au/application-api/miltontest/calculators/refinance?paymentType=PrincipalAndInterest',
-            
-            // TODO
-            getQueryUrl: function(arr){
-                return `${this.base}&currentLoanAmount=${arr[0]}&currentInterestRate=${arr[1]}&currentLoanTermMonth=${arr[2]}&newLoanAmount=${arr[3]}&newInterestRate=${arr[4]}&newLoanTermMonth=${arr[5]}`
+                this.currentLoanAmount = obj.currentLoanAmount;
+                this.currentLoanTermMonth = obj.currentLoanTermMonth;
+                this.currentInterestRate = obj.currentInterestRate;
+
+                this.newLoanAmount = obj.newLoanAmount;
+                this.newLoanTermMonth = obj.newLoanTermMonth;
+                this.newInterestRate = obj.newInterestRate;
             }
 
+            getQuery = () => {
+                let itemsToRemove = ['base', 'getQuery'];
+
+                // functions
+                let removeItems = item => itemsToRemove.indexOf(item) === -1;
+                let mapItems = item => `&${item}=${this[item]}`;
+
+                return this.base +Object.keys(this)
+                    .filter(removeItems)
+                    .map(mapItems)
+                    .join('');
+            }
         }
 
         const handleBack = () => this.setState({ submit: false })
         
         const handleSubmit = () => {
 
-            //TODO
-            let arr = [];
-            arr.push(document.getElementById('currentLoanAmount').value);
-            arr.push(document.getElementById('currentInterestRate').value);
-            arr.push(document.getElementById('currentLoanTerm').value);
+            let arraylist = [];
+            let editedlist = [];
 
-            arr.push(document.getElementById('newLoanAmount').value);
-            arr.push(document.getElementById('newInterestRate').value);
-            arr.push(document.getElementById('newLoanTerm').value);
+            // functions
+            let add = value => arraylist.push({[value.id] : value.value });
 
-            console.log(arr);
-            console.log(url.getQueryUrl(arr));
+            // filter functions
+            let hasAmountProp = item => item.hasOwnProperty('currentLoanAmount') || item.hasOwnProperty('newLoanAmount');
+            let hasTermsProp = item => item.hasOwnProperty('currentLoanTermMonth') || item.hasOwnProperty('newLoanTermMonth');
+            let hasRateProp = item => item.hasOwnProperty('currentInterestRate') || item.hasOwnProperty('newInterestRate');
+
+            // convert functions
+            let convertAmount = item => {
+                for (let prop in item) {
+                    return {[prop] : parseInt(item[prop].replace(',', ''))};
+                }
+            }
+
+            let convertTerms = item => {
+                for (let prop in item){
+                    return { [prop] : item[prop] * 12 }
+                }
+            }
+
+            // append values to array list
+            document.querySelectorAll('.userInputValues').forEach(add);
+
+            // append edited values to array
+            editedlist.push(...arraylist.filter(hasAmountProp).map(convertAmount));
+            editedlist.push(...arraylist.filter(hasTermsProp).map(convertTerms));
+            editedlist.push(...arraylist.filter(hasRateProp));
+
+            // convert multiple objects to one
+            editedlist = Object.assign({}, ...editedlist);
+
+            let api = new Api(editedlist);
+
+            // api call
             axios
-                .get(url.getQueryUrl(arr))
+                .get(api.getQuery())
                 .then(response => {
-                    console.log('response', response);
-                    this.setState({ submit: true, results: response.data});
+
+                    console.log(response.data);
+
+                    /**
+                     * function to find negative savings for savings and month savings
+                     * 
+                     * @param {object} response.data
+                     * 
+                     * @returns {boolean} false = there's negative values;
+                     */
+                    let editedResponse = Object.keys(response.data)
+                        .map( (item, index, array) => 
+                            response.data[item] > 0 
+                                ?  response.data[item] : index !== array.length - 1
+                                    ? false : response.data[item]
+                        )
+                        .find(item => !item);
+
+                    editedResponse = editedResponse === false ? {} : response.data;
+                    this.setState({ submit: true, results: editedResponse})
                 })
         }
 
         if (this.state.submit){
-            console.log('props', this.state);
-            return (
-                <div className="dialog-container">
-                    <h1>result page</h1>
-                    <label>total savings: </label> ${this.state.results.totalSaving} <br/>
-                    <label>total month savings: </label> ${this.state.results.totalMonthlySaving} <br/>
-                    <label>total long term savings: </label>{this.state.results.totalLoanTermMonthSaving} <br/>
-                    <button onClick={handleBack}>back</button>
-                </div>
-            )
+            return ( <Results results={this.state.results} handleClick={handleBack}/> )
         }
 
-        return (
-            <div class="dialog-container">
-
-                <label>current loan amount</label>
-                <Dropdown items={loanAmount} id="currentLoanAmount" />
-                <br/>
-
-                <label>current loan term month</label>
-                <Dropdown items={loanLength} id="currentLoanTerm" />
-                <br/>
-
-                <label>current interest rate</label>
-                <Dropdown items={loanInterest} id="currentInterestRate" />
-
-                <br /><br />
-
-                <label>new loan amount</label>
-                <Dropdown items={loanAmount} id="newLoanAmount" />
-                <br/>
-
-                <label>new loan term month</label>
-                <Dropdown items={loanLength} id="newLoanTerm" />
-                <br/>
-                <label>new interest rate</label>
-                <Dropdown items={loanInterest} id="newInterestRate" />
-
-                <br /><br />
-                <button id="submit" onClick={handleSubmit}>submit</button>
-            </div>
-        );
+        return ( <User items={items} handleClick={handleSubmit} /> );
     }
 }

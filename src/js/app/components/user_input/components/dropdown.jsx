@@ -2,7 +2,7 @@ import React from "react"
 import propTypes from 'prop-types'
 
 const Dropdown = ({ items, id }) =>
-    <select id={id}>
+    <select id={id} class="userInputValues">
         {items.map((item, index) => <option key={index} value={item}>{item}</option>)}
     </select>
 
