@@ -1,4 +1,4 @@
-TO RUN FILES LOCALLY
+# DO FIRST
 
 1. open terminal/power shell for mac/window respectively.
 2. navigate to directory where you like to store files. desktop is fine. eg 'cd Desktop' without quotes.
