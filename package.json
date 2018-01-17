@@ -5,7 +5,7 @@
   "main": "webpack.config.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "webpack-dev-server --content-base . --inline --hot --port 8000",
+    "dev": "webpack-dev-server --content-base ./build --inline --hot --port 8000",
     "buildWin": "SET NODE_ENV=production & webpack -p",
     "buildMac": "NODE_ENV=production & webpack -p"
   },

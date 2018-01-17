@@ -110,6 +110,10 @@ export default class Home extends React.Component {
                     /**
                      * function to find negative savings for savings and month savings
                      * 
+                     * notes:
+                     * maps return boolean value of true is really just a placeholder, 
+                     * what we are searching for are false values.
+                     * 
                      * @param {object} response.data
                      * 
                      * @returns {boolean} false = there's negative values;
@@ -118,7 +122,7 @@ export default class Home extends React.Component {
                         .map( (item, index, array) => 
                             response.data[item] > 0 
                                 ?  response.data[item] : index !== array.length - 1
-                                    ? false : response.data[item]
+                                    ? false : true
                         )
                         .find(item => !item);
 
