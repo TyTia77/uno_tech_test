@@ -1,0 +1,35 @@
+@import "../../../../style/mixin.scss";
+
+.result-btn{
+    @include Button(green);
+}
+
+.result-label,
+.result-label-right{
+    margin-bottom: 5px;
+}
+
+.result-label{
+    display: inline-block;
+    width: 50%;
+    text-transform: capitalize;
+    font-size: 18px;
+
+    &:first-of-type{
+        margin-top: 20px;
+    }
+}
+
+.result-label-right{
+    display: inline-block;
+    width: 50%;
+    font-size: 20px;
+    font-weight: bold;
+    direction: rtl;
+
+    &:last-of-type{
+        margin-bottom: 20px;
+        text-align: right;
+        direction: ltr;
+    }
+}
