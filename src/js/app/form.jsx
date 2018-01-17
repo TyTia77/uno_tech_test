@@ -107,8 +107,6 @@ export default class Home extends React.Component {
                 .get(api.getQuery())
                 .then(response => {
 
-                    console.log(response.data);
-
                     /**
                      * function to find negative savings for savings and month savings
                      * 
